@@ -45,7 +45,7 @@ subject = st.text_input("📌 Chủ đề / Đối tượng", "Tuxedo cat")
 
 # 🎨 Style
 style = select_with_other("🎨 Style (Phong cách)", [
-    "2D Playrix (casual mobile)",
+    "Playrix Game style (casual mobile)",
     "Minimalism (Tối giản)", "Cubism (Lập thể)", "Pop Art (Nghệ thuật đại chúng)",
     "Digital Painting (Hội họa kỹ thuật số)", "Concept Art (Mỹ thuật ý tưởng)", 
     "Line Art (Tranh nét)", "Watercolor (Màu nước)", "Oil Painting (Sơn dầu)", 
