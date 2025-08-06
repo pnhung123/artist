@@ -1,5 +1,6 @@
 import streamlit as st
 import re
+import json
 
 # Cấu hình trang
 st.set_page_config(page_title="🎨 Artist Prompt Builder", page_icon="🎨", layout="centered")
@@ -38,7 +39,7 @@ def select_with_other(label, options):
 
 # Tiêu đề
 st.title("🎨 Artist Prompt Builder")
-st.write("Chọn tuỳ chọn hoặc nhập 'Khác'. Nếu chọn 'None', trường đó sẽ không xuất hiện trong prompt.")
+st.write("Chọn tuỳ chọn hoặc nhập 'Khác'. Nếu chọn 'None', trường đó sẽ không xuất hiện trong JSON.")
 
 # 📌 Chủ đề / Đối tượng
 subject = st.text_input("📌 Chủ đề / Đối tượng", "Tuxedo cat")
@@ -99,7 +100,7 @@ depth_of_field = select_with_other("📏 Depth of Field (Độ sâu trường �
     "Cinematic DOF (Trường ảnh kiểu điện ảnh)"
 ])
 
-# 📐 Composition (thêm Isometric)
+# 📐 Composition
 composition = select_with_other("📐 Composition (Bố cục)", [
     "Rule of Thirds (Quy tắc một phần ba)", "Golden Ratio (Tỷ lệ vàng)", "Symmetry (Đối xứng)",
     "Leading Lines (Đường dẫn thị giác)", "Negative Space (Khoảng trống)", "Isometric"
@@ -121,33 +122,36 @@ n = st.slider("📦 Số lượng ảnh tạo", 1, 5, 1)
 
 # Nút xuất prompt
 if st.button("🚀 Xuất Prompt"):
-    parts = []
-    if subject: parts.append(f"Subject: {subject}")
-    if style: parts.append(f"Style: {style}")
-    if stroke != "None": parts.append(f"Stroke: {stroke}")
-    if shading != "None": parts.append(f"Shading: {shading}")
-    if lighting: parts.append(f"Lighting: {lighting}")
-    if mood: parts.append(f"Mood: {mood}")
+    output = {
+        "Subject": subject,
+        "Style": style if style else None,
+        "Stroke": stroke if stroke != "None" else None,
+        "Shading": shading if shading != "None" else None,
+        "Lighting": lighting if lighting else None,
+        "Mood": mood if mood else None,
+        "Camera": {
+            "Angle": camera_angle if camera_angle else None,
+            "Focus": camera_focus if camera_focus else None,
+            "Depth of Field": depth_of_field if depth_of_field else None
+        },
+        "Other Parameters": {
+            "Composition": composition if composition else None,
+            "Texture": surface_texture if surface_texture else None,
+            "No Yellow Tint": no_yellow,
+            "Ratio": ratio if ratio != "None" else None,
+            "Transparent Background": transparent_background,
+            "Number of Images": str(n)
+        }
+    }
 
-    camera_parts = []
-    if camera_angle: camera_parts.append(f"- Angle: {camera_angle}")
-    if camera_focus: camera_parts.append(f"- Focus: {camera_focus}")
-    if depth_of_field: camera_parts.append(f"- Depth of Field: {depth_of_field}")
-    if camera_parts:
-        parts.append("Camera:\n" + "\n".join(camera_parts))
+    # Hàm xoá key None
+    def remove_none(d):
+        if isinstance(d, dict):
+            return {k: remove_none(v) for k, v in d.items() if v is not None}
+        return d
 
-    other_parts = []
-    if composition: other_parts.append(f"- Composition: {composition}")
-    if surface_texture: other_parts.append(f"- Texture: {surface_texture}")
-    other_parts.append(f"- No Yellow Tint: {no_yellow}")
-    if ratio != "None": other_parts.append(f"- Ratio: {ratio}")
-    other_parts.append(f"- Transparent Background: {transparent_background}")
-    other_parts.append(f"- Number of Images: {n}")
-    if other_parts:
-        parts.append("Other Parameters:\n" + "\n".join(other_parts))
+    clean_output = remove_none(output)
 
-    prompt = "\n\n".join(parts)
-
-    st.subheader("✨ Prompt đã tạo")
-    st.code(prompt, language="yaml")
-    st.success("Copy prompt này để sử dụng!")
+    st.subheader("✨ Prompt đã tạo (JSON)")
+    st.code(json.dumps(clean_output, indent=4, ensure_ascii=False), language="json")
+    st.success("Copy JSON này để sử dụng!")
