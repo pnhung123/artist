@@ -37,6 +37,14 @@ def select_with_other(label, options):
     else:
         return clean_option(choice)
 
+def yes_no_to_bool(value):
+    """Chuyển yes/no thành boolean"""
+    if value.lower() == "yes":
+        return True
+    elif value.lower() == "no":
+        return False
+    return None
+
 # Tiêu đề
 st.title("🎨 Artist Prompt Builder")
 st.write("Chọn tuỳ chọn hoặc nhập 'Khác'. Nếu chọn 'None', trường đó sẽ không xuất hiện trong JSON.")
@@ -125,8 +133,8 @@ if st.button("🚀 Xuất Prompt"):
     output = {
         "Subject": subject,
         "Style": style if style else None,
-        "Stroke": stroke if stroke != "None" else None,
-        "Shading": shading if shading != "None" else None,
+        "Stroke": yes_no_to_bool(stroke) if stroke != "None" else None,
+        "Shading": yes_no_to_bool(shading) if shading != "None" else None,
         "Lighting": lighting if lighting else None,
         "Mood": mood if mood else None,
         "Camera": {
@@ -137,10 +145,10 @@ if st.button("🚀 Xuất Prompt"):
         "Other Parameters": {
             "Composition": composition if composition else None,
             "Texture": surface_texture if surface_texture else None,
-            "No Yellow Tint": no_yellow,
+            "No Yellow Tint": yes_no_to_bool(no_yellow),
             "Ratio": ratio if ratio != "None" else None,
-            "Transparent Background": transparent_background,
-            "Number of Images": str(n)
+            "Transparent Background": yes_no_to_bool(transparent_background),
+            "Number of Images": n
         }
     }
 
@@ -152,6 +160,6 @@ if st.button("🚀 Xuất Prompt"):
 
     clean_output = remove_none(output)
 
-    st.subheader("✨ Prompt đã tạo (JSON)")
+    st.subheader("✨ Prompt đã tạo (JSON với boolean)")
     st.code(json.dumps(clean_output, indent=4, ensure_ascii=False), language="json")
     st.success("Copy JSON này để sử dụng!")
